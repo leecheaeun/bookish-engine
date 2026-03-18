@@ -1,0 +1,82 @@
+import pygame
+
+pygame.init()
+
+screen = pygame.display.set_mode((400, 400))
+pygame.display.set_caption("Jump Game")
+
+WHITE = (255, 255, 255)
+ORANGE = (255, 150, 0)
+BLACK = (0, 0, 0)
+
+clock = pygame.time.Clock()
+font = pygame.font.SysFont(None, 30)
+
+# 바닥
+ground_y = 350
+
+# 플레이어
+radius = 10
+x = 50
+y = ground_y - radius
+
+velocity_y = 0
+gravity = 1
+jump_power = -12
+
+# 장애물 (🔥 더 작게)
+obs_x = 400
+obs_width = 20
+obs_height = 40
+obs_speed = 3
+
+running = True
+game_over = False
+
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                velocity_y = jump_power
+
+    if not game_over:
+        velocity_y += gravity
+        y += velocity_y
+
+        if y >= ground_y - radius:
+            y = ground_y - radius
+            velocity_y = 0
+
+        obs_x -= obs_speed
+        if obs_x < -obs_width:
+            obs_x = 400
+
+        obs_y = ground_y - obs_height
+
+        # 충돌
+        if (x + radius > obs_x and
+            x - radius < obs_x + obs_width and
+            y + radius > obs_y):
+            game_over = True
+
+    screen.fill(BLACK)
+
+    pygame.draw.line(screen, WHITE, (0, ground_y), (400, ground_y), 2)
+    pygame.draw.circle(screen, ORANGE, (int(x), int(y)), radius)
+    pygame.draw.rect(screen, WHITE, (obs_x, obs_y, obs_width, obs_height))
+
+    fps = clock.get_fps()
+    fps_text = font.render(f"FPS: {int(fps)}", True, WHITE)
+    screen.blit(fps_text, (10, 10))
+
+    if game_over:
+        text = font.render("GAME OVER", True, WHITE)
+        screen.blit(text, (120, 180))
+
+    pygame.display.flip()
+    clock.tick(60)
+
+pygame.quit()
